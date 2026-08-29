@@ -12,7 +12,6 @@ function App() {
   const login = (data) => {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
-
     setToken(data.token);
     setUser(data.user);
   };
@@ -43,31 +42,44 @@ function App() {
       </header>
 
       {user.role === "ADMIN" && <AdminDashboard token={token} />}
-
-      {user.role === "STORE_OWNER" && (
-        <OwnerDashboard token={token} />
-      )}
-
-      {user.role === "USER" && (
-        <UserDashboard token={token} />
-      )}
+      {user.role === "STORE_OWNER" && <OwnerDashboard token={token} />}
+      {user.role === "USER" && <UserDashboard token={token} />}
     </div>
   );
 }
 
 
 /* =====================================================
-   LOGIN
+   LOGIN + REGISTER
 ===================================================== */
 
 function Login({ onLogin }) {
+  const [showRegister, setShowRegister] = useState(false);
+
+  if (showRegister) {
+    return (
+      <Register
+        onBack={() => setShowRegister(false)}
+      />
+    );
+  }
+
+  return (
+    <LoginForm
+      onLogin={onLogin}
+      onRegister={() => setShowRegister(true)}
+    />
+  );
+}
+
+
+function LoginForm({ onLogin, onRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     setMessage("");
 
     try {
@@ -101,7 +113,6 @@ function Login({ onLogin }) {
       <div className="login-box">
 
         <h1>Roxiler</h1>
-
         <h2>Store Rating System</h2>
 
         <form onSubmit={handleLogin}>
@@ -134,7 +145,12 @@ function Login({ onLogin }) {
           </p>
         )}
 
-        {/* TEST ACCOUNTS */}
+        <button
+          className="register-button"
+          onClick={onRegister}
+        >
+          Create New Account
+        </button>
 
         <div className="test-accounts">
 
@@ -142,7 +158,6 @@ function Login({ onLogin }) {
 
           <div className="account">
             <strong>Admin</strong>
-
             <p>
               Email: smiti.test@gmail.com
               <br />
@@ -152,7 +167,6 @@ function Login({ onLogin }) {
 
           <div className="account">
             <strong>Store Owner</strong>
-
             <p>
               Email: owner@gmail.com
               <br />
@@ -162,7 +176,6 @@ function Login({ onLogin }) {
 
           <div className="account">
             <strong>User</strong>
-
             <p>
               Email: user@gmail.com
               <br />
@@ -179,15 +192,160 @@ function Login({ onLogin }) {
 
 
 /* =====================================================
+   REGISTER
+===================================================== */
+
+function Register({ onBack }) {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    address: ""
+  });
+
+  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    setMessage("");
+    setSuccess(false);
+
+    try {
+      const response = await fetch(
+        `${API}/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(form)
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(data.message || "Registration failed");
+        return;
+      }
+
+      setSuccess(true);
+      setMessage(
+        "Registration successful! You can now login."
+      );
+
+      setForm({
+        name: "",
+        email: "",
+        password: "",
+        address: ""
+      });
+
+    } catch (error) {
+      console.error(error);
+      setMessage("Cannot connect to backend");
+    }
+  };
+
+  return (
+    <div className="login-page">
+
+      <div className="login-box">
+
+        <h1>Roxiler</h1>
+
+        <h2>Create Account</h2>
+
+        <form onSubmit={handleRegister}>
+
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={form.name}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                name: e.target.value
+              })
+            }
+            required
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                email: e.target.value
+              })
+            }
+            required
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                password: e.target.value
+              })
+            }
+            required
+          />
+
+          <input
+            type="text"
+            placeholder="Address"
+            value={form.address}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                address: e.target.value
+              })
+            }
+            required
+          />
+
+          <button type="submit">
+            Register
+          </button>
+
+        </form>
+
+        {message && (
+          <p className={success ? "success" : "error"}>
+            {message}
+          </p>
+        )}
+
+        <button
+          className="register-button"
+          onClick={onBack}
+        >
+          Back to Login
+        </button>
+
+      </div>
+
+    </div>
+  );
+}
+
+
+/* =====================================================
    ADMIN DASHBOARD
 ===================================================== */
 
 function AdminDashboard({ token }) {
 
   const [dashboard, setDashboard] = useState(null);
-
   const [users, setUsers] = useState([]);
-
   const [stores, setStores] = useState([]);
 
   const [userForm, setUserForm] = useState({
@@ -211,47 +369,28 @@ function AdminDashboard({ token }) {
   };
 
   const loadData = async () => {
-
     try {
-
       const dashboardResponse = await fetch(
         `${API}/admin/dashboard`,
-        {
-          headers
-        }
+        { headers }
       );
 
       const usersResponse = await fetch(
         `${API}/admin/users`,
-        {
-          headers
-        }
+        { headers }
       );
 
       const storesResponse = await fetch(
         `${API}/admin/stores`,
-        {
-          headers
-        }
+        { headers }
       );
 
-      const dashboardData =
-        await dashboardResponse.json();
-
-      const usersData =
-        await usersResponse.json();
-
-      const storesData =
-        await storesResponse.json();
-
-      setDashboard(dashboardData);
-      setUsers(usersData);
-      setStores(storesData);
+      setDashboard(await dashboardResponse.json());
+      setUsers(await usersResponse.json());
+      setStores(await storesResponse.json());
 
     } catch (error) {
-
       console.error(error);
-
     }
   };
 
@@ -260,11 +399,9 @@ function AdminDashboard({ token }) {
   }, []);
 
   const createUser = async (e) => {
-
     e.preventDefault();
 
     try {
-
       const response = await fetch(
         `${API}/admin/users`,
         {
@@ -279,7 +416,6 @@ function AdminDashboard({ token }) {
       alert(data.message);
 
       if (response.ok) {
-
         setUserForm({
           name: "",
           email: "",
@@ -292,20 +428,15 @@ function AdminDashboard({ token }) {
       }
 
     } catch (error) {
-
       console.error(error);
-
       alert("Failed to create user");
-
     }
   };
 
   const createStore = async (e) => {
-
     e.preventDefault();
 
     try {
-
       const response = await fetch(
         `${API}/stores`,
         {
@@ -327,7 +458,6 @@ function AdminDashboard({ token }) {
       alert(data.message);
 
       if (response.ok) {
-
         setStoreForm({
           name: "",
           email: "",
@@ -339,11 +469,8 @@ function AdminDashboard({ token }) {
       }
 
     } catch (error) {
-
       console.error(error);
-
       alert("Failed to create store");
-
     }
   };
 
@@ -352,48 +479,32 @@ function AdminDashboard({ token }) {
 
       <h2>Admin Dashboard</h2>
 
-      {/* DASHBOARD CARDS */}
-
       {dashboard && (
-
         <div className="cards">
 
           <div className="card">
-
             <h3>Total Users</h3>
-
             <strong>
               {dashboard.totalUsers}
             </strong>
-
           </div>
 
           <div className="card">
-
             <h3>Total Stores</h3>
-
             <strong>
               {dashboard.totalStores}
             </strong>
-
           </div>
 
           <div className="card">
-
             <h3>Total Ratings</h3>
-
             <strong>
               {dashboard.totalRatings}
             </strong>
-
           </div>
 
         </div>
-
       )}
-
-
-      {/* CREATE USER */}
 
       <section className="panel">
 
@@ -486,9 +597,6 @@ function AdminDashboard({ token }) {
 
       </section>
 
-
-      {/* CREATE STORE */}
-
       <section className="panel">
 
         <h2>Create Store</h2>
@@ -555,9 +663,6 @@ function AdminDashboard({ token }) {
 
       </section>
 
-
-      {/* USERS */}
-
       <section className="panel">
 
         <h2>Users</h2>
@@ -567,15 +672,10 @@ function AdminDashboard({ token }) {
           <thead>
 
             <tr>
-
               <th>Name</th>
-
               <th>Email</th>
-
               <th>Address</th>
-
               <th>Role</th>
-
             </tr>
 
           </thead>
@@ -587,11 +687,8 @@ function AdminDashboard({ token }) {
               <tr key={u.id}>
 
                 <td>{u.name}</td>
-
                 <td>{u.email}</td>
-
                 <td>{u.address}</td>
-
                 <td>{u.role}</td>
 
               </tr>
@@ -604,9 +701,6 @@ function AdminDashboard({ token }) {
 
       </section>
 
-
-      {/* STORES */}
-
       <section className="panel">
 
         <h2>Stores</h2>
@@ -616,15 +710,10 @@ function AdminDashboard({ token }) {
           <thead>
 
             <tr>
-
               <th>Name</th>
-
               <th>Email</th>
-
               <th>Address</th>
-
               <th>Rating</th>
-
             </tr>
 
           </thead>
@@ -636,11 +725,8 @@ function AdminDashboard({ token }) {
               <tr key={store.id}>
 
                 <td>{store.name}</td>
-
                 <td>{store.email}</td>
-
                 <td>{store.address}</td>
-
                 <td>
                   ⭐ {store.rating}
                 </td>
@@ -661,15 +747,13 @@ function AdminDashboard({ token }) {
 
 
 /* =====================================================
-   NORMAL USER DASHBOARD
+   USER DASHBOARD
 ===================================================== */
 
 function UserDashboard({ token }) {
 
   const [stores, setStores] = useState([]);
-
   const [search, setSearch] = useState("");
-
   const [ratings, setRatings] = useState({});
 
   const headers = {
@@ -687,9 +771,7 @@ function UserDashboard({ token }) {
 
       const response = await fetch(
         url,
-        {
-          headers
-        }
+        { headers }
       );
 
       const data = await response.json();
@@ -704,11 +786,8 @@ function UserDashboard({ token }) {
   };
 
   useEffect(() => {
-
     loadStores();
-
   }, []);
-
 
   const submitRating = async (store) => {
 
@@ -763,29 +842,24 @@ function UserDashboard({ token }) {
       alert(data.message);
 
       if (response.ok) {
-
         loadStores();
-
       }
 
     } catch (error) {
 
       console.error(error);
 
-      alert("Failed to submit rating");
+      alert(
+        "Failed to submit rating"
+      );
 
     }
   };
 
-
   return (
-
     <main>
 
       <h2>Store List</h2>
-
-
-      {/* SEARCH */}
 
       <div className="search">
 
@@ -803,23 +877,17 @@ function UserDashboard({ token }) {
 
         <button
           onClick={() => {
-
             setSearch("");
 
-            setTimeout(() => {
-
-              fetch(`${API}/stores`, {
-                headers
-              })
-                .then((response) =>
-                  response.json()
-                )
-                .then((data) =>
-                  setStores(data)
-                );
-
-            }, 0);
-
+            fetch(`${API}/stores`, {
+              headers
+            })
+              .then((response) =>
+                response.json()
+              )
+              .then((data) =>
+                setStores(data)
+              );
           }}
         >
           Clear
@@ -827,19 +895,12 @@ function UserDashboard({ token }) {
 
       </div>
 
-
-      {/* STORE CARDS */}
-
       <div className="store-grid">
 
         {stores.length === 0 ? (
 
           <div className="panel">
-
-            <p>
-              No stores found.
-            </p>
-
+            <p>No stores found.</p>
           </div>
 
         ) : (
@@ -933,11 +994,11 @@ function UserDashboard({ token }) {
 
       </div>
 
-
-      <PasswordChange token={token} />
+      <PasswordChange
+        token={token}
+      />
 
     </main>
-
   );
 }
 
@@ -952,14 +1013,15 @@ function OwnerDashboard({ token }) {
 
   useEffect(() => {
 
-    fetch(`${API}/owner/dashboard`, {
-
-      headers: {
-        Authorization:
-          `Bearer ${token}`
+    fetch(
+      `${API}/owner/dashboard`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${token}`
+        }
       }
-
-    })
+    )
       .then((response) =>
         response.json()
       )
@@ -972,40 +1034,29 @@ function OwnerDashboard({ token }) {
 
   }, [token]);
 
-
   if (!data) {
 
     return (
-
       <main>
-
         <h2>
           Loading dashboard...
         </h2>
-
       </main>
-
     );
 
   }
-
 
   if (data.message) {
 
     return (
-
       <main>
-
         <h2>
           {data.message}
         </h2>
-
       </main>
-
     );
 
   }
-
 
   return (
 
@@ -1014,7 +1065,6 @@ function OwnerDashboard({ token }) {
       <h2>
         Store Owner Dashboard
       </h2>
-
 
       <div className="cards">
 
@@ -1031,7 +1081,6 @@ function OwnerDashboard({ token }) {
 
         </div>
 
-
         <div className="card">
 
           <h3>
@@ -1044,7 +1093,6 @@ function OwnerDashboard({ token }) {
 
         </div>
 
-
         <div className="card">
 
           <h3>
@@ -1052,14 +1100,12 @@ function OwnerDashboard({ token }) {
           </h3>
 
           <strong>
-            {data.usersWhoRated
-              ?.length || 0}
+            {data.usersWhoRated?.length || 0}
           </strong>
 
         </div>
 
       </div>
-
 
       <section className="panel">
 
@@ -1073,17 +1119,9 @@ function OwnerDashboard({ token }) {
 
             <tr>
 
-              <th>
-                Name
-              </th>
-
-              <th>
-                Email
-              </th>
-
-              <th>
-                Rating
-              </th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Rating</th>
 
             </tr>
 
@@ -1119,7 +1157,6 @@ function OwnerDashboard({ token }) {
 
       </section>
 
-
       <PasswordChange
         token={token}
       />
@@ -1141,7 +1178,6 @@ function PasswordChange({ token }) {
 
   const [newPassword, setNewPassword] =
     useState("");
-
 
   const changePassword = async (e) => {
 
@@ -1191,7 +1227,6 @@ function PasswordChange({ token }) {
 
     }
   };
-
 
   return (
 

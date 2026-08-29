@@ -223,3 +223,30 @@ th {
     padding: 20px;
   }
 }
+
+.register-button {
+  width: 100%;
+  margin-top: 15px;
+  background: #374151;
+}
+
+.test-accounts {
+  margin-top: 25px;
+  padding: 15px;
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+.account {
+  margin-bottom: 15px;
+}
+
+.account p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.success {
+  color: #16a34a;
+  text-align: center;
+}
