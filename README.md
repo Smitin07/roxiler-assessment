@@ -53,13 +53,16 @@ node server.js
 ## Screenshots
 
 ### Login Page
-![Login Page](screenshots/login.png)
+![Login Page](screenshots/Login_Page.png)
+
+### Registration Page
+![Registration Page](screenshots/Registration_Page.png)
 
 ### Admin Dashboard
-![Admin Dashboard](screenshots/admin-dashboard.png)
-
-### Store Owner Dashboard
-![Store Owner Dashboard](screenshots/owner-dashboard.png)
+![Admin Dashboard](screenshots/Admin_Dashboard.png)
 
 ### User Dashboard
-![User Dashboard](screenshots/user-dashboard.png)
+![User Dashboard](screenshots/User_Dashboard.png)
+
+### Store Owner Dashboard
+![Store Owner Dashboard](screenshots/Owner_Dashboard.png)
