@@ -49,3 +49,17 @@ A full-stack store rating application developed for the Roxiler Systems Full Sta
 cd backend
 npm install
 node server.js
+
+## Screenshots
+
+### Login Page
+![Login Page](screenshots/login.png)
+
+### Admin Dashboard
+![Admin Dashboard](screenshots/admin-dashboard.png)
+
+### Store Owner Dashboard
+![Store Owner Dashboard](screenshots/owner-dashboard.png)
+
+### User Dashboard
+![User Dashboard](screenshots/user-dashboard.png)
