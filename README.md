@@ -1,6 +1,6 @@
-# Roxiler Store Rating System
+# Store Rating and Management System
 
-A full-stack store rating application developed for the Roxiler Systems Full Stack Developer assessment.
+A full-stack store rating application.
 
 ## Tech Stack
 
