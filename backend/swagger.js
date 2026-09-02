@@ -12,7 +12,8 @@ const swaggerSpec = swaggerJsdoc({
 
     servers: [
       {
-        url: "http://localhost:3000"
+        url: process.env.SERVER_URL || `http://localhost:${process.env.PORT || 3000}`,
+        description: "API Server"
       }
     ],
 

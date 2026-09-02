@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const pool = require("./config/database");
@@ -13,11 +14,37 @@ const ownerRoutes = require("./routes/ownerRoutes");
 
 const app = express();
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 
-// Middleware
-app.use(cors());
+// CORS Configuration
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  ...(process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(",").map((url) => url.trim().replace(/\/$/, ""))
+    : [])
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (such as mobile apps, curl, Postman, Swagger UI)
+      if (!origin) return callback(null, true);
+
+      // If FRONTEND_URL is not set, allow all origins
+      if (!process.env.FRONTEND_URL) return callback(null, true);
+
+      const normalizedOrigin = origin.replace(/\/$/, "");
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS policy does not allow access from origin: ${origin}`));
+    },
+    credentials: true
+  })
+);
+
 app.use(express.json());
 
 
@@ -28,11 +55,6 @@ app.use("/api/stores", storeRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/owner", ownerRoutes);
-
-
-
-// Authentication routes
-app.use("/api/auth", authRoutes);
 
 // Test backend
 app.get("/", (req, res) => {
@@ -70,5 +92,5 @@ app.get("/api/protected", authenticateToken, (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

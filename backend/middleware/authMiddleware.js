@@ -12,7 +12,10 @@ const authenticateToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, "roxiler_secret_key");
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "roxiler_secret_key"
+    );
 
     req.user = decoded;
 

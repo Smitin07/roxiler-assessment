@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-const API = "http://localhost:3000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API = API_BASE_URL.replace(/\/+$/, "").endsWith("/api")
+  ? API_BASE_URL.replace(/\/+$/, "")
+  : `${API_BASE_URL.replace(/\/+$/, "")}/api`;
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
